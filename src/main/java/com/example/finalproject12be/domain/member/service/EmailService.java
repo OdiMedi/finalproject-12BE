@@ -51,7 +51,6 @@ public class EmailService {
 		mailSender.send(message);
 	}
 
-
 	public void sendNumber(int number, String email) {
 		SimpleMailMessage message = new SimpleMailMessage();
 		message.setTo(email); //수신자 설정
