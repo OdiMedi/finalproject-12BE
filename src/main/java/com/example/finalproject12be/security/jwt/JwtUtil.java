@@ -5,6 +5,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.Optional;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
 import com.example.finalproject12be.domain.member.dto.TokenDto;
+import com.example.finalproject12be.domain.member.entity.MemberRoleEnum;
 import com.example.finalproject12be.domain.member.entity.RefreshToken;
 import com.example.finalproject12be.domain.member.repository.RefreshTokenRepository;
 import com.example.finalproject12be.security.UserDetailsServiceImpl;
@@ -46,7 +48,6 @@ public class JwtUtil {
 	private static final long ACCESS_TIME = 30 * 60 * 1000L;
 	private static final long REFRESH_TIME = 24 * 60 * 60 * 1000L;
 	private final RefreshTokenRepository refreshTokenRepository;
-
 
 	@Value("${jwt.secret.key}")
 	private String secretKey;
@@ -69,15 +70,14 @@ public class JwtUtil {
 		return null;
 	}
 
-	public TokenDto createAllToken(String username) {
+	public TokenDto createAllToken(String username, MemberRoleEnum role) {
 
-		return new TokenDto(createToken(username, "Access"), createToken(username, "Refresh"));
+		return new TokenDto(createToken(username, "Access", role), createToken(username, "Refresh", role));
 	}
 
-	public String createToken(String username, String tokentype) {
+	public String createToken(String username, String tokentype, MemberRoleEnum role) {
 
 		Date date = new Date();
-		String role = "USER";
 		long expireTime = tokentype.equals("Access") ? ACCESS_TIME : REFRESH_TIME;
 
 		return BEARER_PREFIX +
@@ -112,13 +112,14 @@ public class JwtUtil {
 		if(!validateToken(token)) {
 			return false;
 		}
-		Optional<RefreshToken> refreshToken = refreshTokenRepository.findByEmail(getUserInfoFromToken(token));
+		Claims info = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+		Optional<RefreshToken> refreshToken = refreshTokenRepository.findByEmail(info.getSubject());
 		return refreshToken.isPresent() && token.equals(refreshToken.get().getRefreshToken());
 	}
 
-	public String getUserInfoFromToken(String token) {
+	public Claims getUserInfoFromToken(String token) {
 
-		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody().getSubject();
+		return Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
 	}
 
 	public Authentication createAuthentication(String email) {

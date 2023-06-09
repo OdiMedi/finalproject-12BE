@@ -70,10 +70,11 @@ public class CommentController {
 
     // 댓글 삭제
     @DeleteMapping("/{store-id}/{comment-id}")
-    public ResponseEntity<Void> deleteComment(
+    public ResponseEntity<String> deleteComment(
             @PathVariable("store-id") Long storeId,
             @PathVariable("comment-id") Long commentId,
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
-        return commentService.deleteComment(commentId, userDetails.getMember());
+        commentService.deleteComment(commentId, userDetails.getMember());
+        return ResponseEntity.ok("댓글이 삭제되었습니다.");
     }
 }

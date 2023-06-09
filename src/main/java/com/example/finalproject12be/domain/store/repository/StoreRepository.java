@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.example.finalproject12be.domain.comment.entity.Comment;
 import com.example.finalproject12be.domain.store.entity.Store;
+
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
@@ -40,4 +42,9 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> findAllByJapanese(int japanese);
 
 	List<Store> findAllByNightPharmacy(int nightPharmacy);
+
+    Optional<Store> deleteStoresById(Long storeId);
+
+    Optional<Store> findById(Long storeId);
+
 }

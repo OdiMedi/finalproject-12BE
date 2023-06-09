@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.finalproject12be.domain.member.dto.request.MemberEmailRequest;
 import com.example.finalproject12be.domain.member.dto.request.MemberLoginRequest;
 import com.example.finalproject12be.domain.member.dto.request.MemberNameRequest;
+import com.example.finalproject12be.domain.member.dto.request.MemberNameRequestAdmin;
 import com.example.finalproject12be.domain.member.dto.request.MemberPasswordRequest;
 import com.example.finalproject12be.domain.member.dto.request.MemberSignupRequest;
 import com.example.finalproject12be.domain.member.dto.response.MemberLoginResponse;
@@ -88,8 +89,21 @@ public class MemberController {
 		return ResponseEntity.status(HttpStatus.OK).body(null);
 	}
 
+	@PutMapping("/user/change/nickname/admin")
+	public ResponseEntity<MemberNewNameResponse> changeNicknameAdmin(
+		@RequestBody @Valid MemberNameRequestAdmin memberNameRequest,
+		@AuthenticationPrincipal UserDetailsImpl userDetails
+	){
+		MemberNewNameResponse changeResult = memberService.changeNicknameAdmin(memberNameRequest.getNewName(), userDetails.getMember(), memberNameRequest.getNickname());
+		return ResponseEntity.status(HttpStatus.OK).body(changeResult);
+	}
 
-
-
+	@DeleteMapping("/user/signout/admin")
+	public ResponseEntity<String> signOutAdmin(
+		@RequestBody @Valid MemberNameRequest memberNameRequest, @AuthenticationPrincipal UserDetailsImpl userDetails,
+		final HttpServletRequest request) {
+		memberService.signoutAdmin(memberNameRequest, userDetails.getMember(), request);
+		return ResponseEntity.ok("회원 탈퇴가 완료되었습니다.");
+	}
 
 }

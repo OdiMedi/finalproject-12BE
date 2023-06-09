@@ -15,7 +15,9 @@ public enum MemberErrorCode implements ErrorCode {
 	MEMBER_NOT_FOUND(HttpStatus.NOT_FOUND, "회원을 찾을 수 없습니다"),
 	INVALID_PASSWORD(HttpStatus.NOT_FOUND, "비밀번호가 일치하지 않습니다"),
 	PASSWORD_ERROR1(HttpStatus.NOT_FOUND, "비밀번호는 4자 이상 8자 이하여야 합니다"),
-	EMAIL_ERROR1(HttpStatus.NOT_FOUND, "이메일 형식이 올바르지 않습니다")
+	EMAIL_ERROR1(HttpStatus.NOT_FOUND, "이메일 형식이 올바르지 않습니다"),
+	ADMIN_ERROR(HttpStatus.NOT_FOUND, "관리자 암호가 틀려 등록이 불가능합니다."),
+	STORE_NOT_FOUND(HttpStatus.NOT_FOUND, "약국을 찾을 수 없습니다")
 	;
 
 	private final HttpStatus httpStatus;

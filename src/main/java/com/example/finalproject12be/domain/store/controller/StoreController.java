@@ -2,16 +2,26 @@ package com.example.finalproject12be.domain.store.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 //import com.example.finalproject12be.domain.store.OpenApiManager;
+import com.example.finalproject12be.domain.comment.dto.CommentRequestDto;
+import com.example.finalproject12be.domain.comment.dto.CommentResponseDto;
 import com.example.finalproject12be.domain.store.dto.ForeignOneStoreResponse;
 import com.example.finalproject12be.domain.store.dto.ForeignStoreResponse;
 import com.example.finalproject12be.domain.store.dto.OneStoreResponseDto;
+import com.example.finalproject12be.domain.store.dto.StoreRequest;
 import com.example.finalproject12be.domain.store.dto.StoreResponseDto;
 import com.example.finalproject12be.domain.store.entity.Store;
 import com.example.finalproject12be.domain.store.repository.StoreRepository;
@@ -21,7 +31,7 @@ import com.example.finalproject12be.security.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+
 @RestController
 @RequiredArgsConstructor
 public class StoreController {
@@ -106,6 +116,33 @@ public class StoreController {
 
 		return storeService.testLocation(baseRadius,baseLatitude, baseLongitude);
 		//return storeService.getLocation(baseRadius,baseLatitude, baseLongitude, address);
+	}
+
+	@PostMapping("/api/store")
+	public ResponseEntity<String> createStore (
+		@RequestBody StoreRequest storeRequest,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		System.out.println("test!");
+		storeService.createStore(storeRequest, userDetails.getMember());
+		return ResponseEntity.ok("약국이 등록되었습니다.");
+	}
+
+	@PutMapping("/api/store/{store-id}")
+	public ResponseEntity<String> updateComment(
+		@PathVariable("store-id") Long storeId,
+		@RequestBody StoreRequest storeRequest,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		storeService.updateStore(storeId, storeRequest, userDetails.getMember());
+		return ResponseEntity.ok("약국이 수정되었습니다.");
+	}
+
+	// 댓글 삭제
+	@DeleteMapping("/api/store/{store-id}")
+	public ResponseEntity<String> deleteComment(
+		@PathVariable("store-id") Long storeId,
+		@AuthenticationPrincipal UserDetailsImpl userDetails) {
+		storeService.deleteStore(storeId, userDetails.getMember());
+		return ResponseEntity.ok("약국이 삭제되었습니다.");
 	}
 
 }

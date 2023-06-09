@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.finalproject12be.domain.member.repository.MemberRepository;
 import com.example.finalproject12be.security.jwt.JwtAuthFilter;
 import com.example.finalproject12be.security.jwt.JwtUtil;
 
@@ -28,8 +29,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableGlobalMethodSecurity(securedEnabled = true) // @Secured 어노테이션 활성화
 public class WebSecurityConfig {
 
-	 private final JwtAuthFilter jwtAuthFilter;
 	 private final JwtUtil jwtUtil;
+	 private final MemberRepository memberRepository;
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return new BCryptPasswordEncoder();
@@ -46,13 +47,13 @@ public class WebSecurityConfig {
 		http.authorizeRequests()
 				.antMatchers("/user/**").permitAll()
 				.antMatchers("/api/store/**").permitAll()
-
+				.antMatchers("/api/store").permitAll()
 				.antMatchers("/user/signin/**").permitAll()
 				.antMatchers("/**").permitAll()
 				.antMatchers("/api/comment/{store-id}").permitAll()
 				.anyRequest().authenticated()
 				// JWT 인증/인가를 사용하기 위한 설정
-				.and().addFilterBefore(new JwtAuthFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+				.and().addFilterBefore(new JwtAuthFilter(jwtUtil, memberRepository), UsernamePasswordAuthenticationFilter.class);
 
 		return http.build();
 

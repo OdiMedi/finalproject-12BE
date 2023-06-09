@@ -8,6 +8,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.finalproject12be.domain.member.entity.Member;
+import com.example.finalproject12be.domain.member.entity.MemberRoleEnum;
 
 public class UserDetailsImpl implements UserDetails {
 
@@ -27,8 +28,11 @@ public class UserDetailsImpl implements UserDetails {
 
 	@Override
 	public Collection<? extends GrantedAuthority> getAuthorities() {
-
-		String authority = "USER";
+		System.out.println("!!!!!!!!!!!!!getAuthority 문제!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		MemberRoleEnum role = member.getRole();
+		String authority = role.getAuthority();
+		System.out.println(authority);
+		//String authority = "USER";
 		SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
 		Collection<GrantedAuthority> authorities = new ArrayList<>();
 		authorities.add(simpleGrantedAuthority);
