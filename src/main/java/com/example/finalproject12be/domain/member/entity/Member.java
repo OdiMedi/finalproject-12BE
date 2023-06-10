@@ -80,5 +80,4 @@ public class Member {
 	public void updatePassword(String newPassword) {
 		this.password = newPassword;
 	}
-
 }

@@ -18,14 +18,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 //import org.springframework.security.crypto.password.PasswordEncoder;
-import com.example.finalproject12be.domain.comment.entity.Comment;
 import com.example.finalproject12be.domain.comment.repository.CommentRepository;
-import com.example.finalproject12be.domain.member.dto.request.MemberNameRequest;
-import com.example.finalproject12be.domain.member.dto.request.MemberNameRequestAdmin;
 import com.example.finalproject12be.domain.member.dto.response.MemberLoginResponse;
 import com.example.finalproject12be.domain.member.dto.response.MemberNewNameResponse;
-import com.example.finalproject12be.domain.member.entity.MemberRoleEnum;
-import com.example.finalproject12be.domain.store.entity.Store;
 import com.example.finalproject12be.domain.validNumber.entity.ValidNumber;
 import com.example.finalproject12be.domain.validNumber.repository.ValidNumberRepository;
 import com.example.finalproject12be.exception.CommonErrorCode;
@@ -58,7 +53,6 @@ import com.example.finalproject12be.domain.member.repository.RefreshTokenReposit
 import com.example.finalproject12be.security.jwt.JwtUtil;
 //import com.example.finalproject12be.security.jwt.JwtUtil;
 
-import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -72,23 +66,13 @@ public class MemberService {
 	private final EmailService emailService;
 	private final CommentRepository commentRepository;
 	private final ValidNumberRepository validNumberRepository;
-	private static final String ADMIN_TOKEN = "Odiyac";
 
 	@Transactional
 	public void signup(final MemberSignupRequest memberSignupRequest) {
 
 		throwIfExistOwner(memberSignupRequest.getEmail(), memberSignupRequest.getNickname());
 		String password = passwordEncoder.encode(memberSignupRequest.getPassword());
-
-		MemberRoleEnum role = MemberRoleEnum.USER;
-		if (memberSignupRequest.isAdmin()) {
-			if (!memberSignupRequest.getAdminToken().equals(ADMIN_TOKEN)) {
-				throw new RestApiException(MemberErrorCode.ADMIN_ERROR);
-			}
-			role = MemberRoleEnum.ADMIN;
-		}
-
-		Member member = MemberSignupRequest.toEntity(memberSignupRequest, password, role);
+		Member member = MemberSignupRequest.toEntity(memberSignupRequest, password);
 		memberRepository.save(member);
 	}
 
@@ -107,7 +91,7 @@ public class MemberService {
 			throw new RestApiException(MemberErrorCode.INVALID_PASSWORD);
 		}
 
-		TokenDto tokenDto = jwtUtil.createAllToken(searchedMember.getEmail(), searchedMember.getRole());
+		TokenDto tokenDto = jwtUtil.createAllToken(email);
 		Optional<RefreshToken> refreshToken = refreshTokenRepository.findByEmail(email);
 
 		if(refreshToken.isPresent()) {
@@ -126,7 +110,6 @@ public class MemberService {
 
 	}
 
-	@Transactional
 	public void logout(HttpServletRequest request, HttpServletResponse response) {
 
 		String accessToken = jwtUtil.resolveToken(request, JwtUtil.ACCESS_KEY);
@@ -136,12 +119,12 @@ public class MemberService {
 			if (accessToken != null) {
 				boolean isAccessTokenExpired = jwtUtil.validateToken(accessToken);
 				if (!isAccessTokenExpired) {
-					Claims accessInfo = jwtUtil.getUserInfoFromToken(accessToken);
+					String username = jwtUtil.getUserInfoFromToken(accessToken);
 					// 액세스 토큰을 무효화하는 작업 수행
 					Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 					if (authentication != null && authentication.getPrincipal() instanceof UserDetailsImpl) {
 						UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-						if (accessInfo.getSubject().equals(userDetails.getUsername())) {
+						if (username.equals(userDetails.getUsername())) {
 							SecurityContextHolder.clearContext();
 						}
 					}
@@ -152,7 +135,7 @@ public class MemberService {
 			if (refreshToken != null) {
 				boolean isRefreshTokenValid = jwtUtil.refreshTokenValidation(refreshToken);
 				if (isRefreshTokenValid) {
-					Claims refreshInfo = jwtUtil.getUserInfoFromToken(refreshToken);
+					String username = jwtUtil.getUserInfoFromToken(refreshToken);
 					// 리프레시 토큰을 무효화하는 작업 수행
 					// 여기에 리프레시 토큰을 저장하는 로직 또는 DB에서 삭제하는 로직을 추가해야 합니다.
 				}
@@ -218,22 +201,9 @@ public class MemberService {
 
 		if (member.getKakaoId() == null) {
 			// 카카오 소셜 로그인이 아닌 일반 가입 회원의 경우 직접 삭제
-			List<Comment> comments = commentRepository.findByMember(member);
-			for (Comment comment : comments) {
-				// memberId를 임의로 변경합니다.
-				comment.deleteMember();
-				comment.setNickname("탈퇴한 회원");
-			}
 			memberRepository.delete(member);
-
 		} else {
 			// 카카오 소셜 로그인 회원의 경우 카카오 계정 연결 해제 후 삭제
-			List<Comment> comments = commentRepository.findByMember(member);
-			for (Comment comment : comments) {
-				// memberId를 임의로 변경합니다.
-				comment.deleteMember();
-				comment.setNickname("탈퇴한 회원");
-			}
 			disconnectKakaoAccount(kakaoAccessToken);
 			commentRepository.deleteCommentsByMemberId(member.getId());//수정 필요
 			memberRepository.delete(member);
@@ -296,22 +266,19 @@ public class MemberService {
 
 	// @Transactional
 	public MemberNewNameResponse changeNickname(String newName, Member member) {
+		Optional<Member> memberOptional = memberRepository.findByNickname(newName);
 
-			Optional<Member> memberOptional = memberRepository.findByNickname(newName);
+		if(memberOptional.isPresent()){
+			throw new RestApiException(MemberErrorCode.DUPLICATED_MEMBER);
+		}
 
-			if(memberOptional.isPresent()){
-				throw new RestApiException(MemberErrorCode.DUPLICATED_MEMBER);
-			}
+		member.updateName(newName);
+		memberRepository.save(member);
 
-			member.updateName(newName);
-			memberRepository.save(member);
-
-			return new MemberNewNameResponse(newName);
-
+		return new MemberNewNameResponse(newName);
 	}
 
 	//ing
-	@Transactional
 	public void findPassword(String email) {
 
 		Optional<Member> memberOptional = memberRepository.findByEmail(email);
@@ -340,7 +307,6 @@ public class MemberService {
 		}
 	}
 
-	@Transactional
 	public void changePassword(String password, Member member) {
 
 		String encodePw = passwordEncoder.encode(password);
@@ -348,70 +314,6 @@ public class MemberService {
 		memberRepository.save(member);
 
 	}
-
-	@Transactional
-	public MemberNewNameResponse changeNicknameAdmin(String newName, Member member, String nickname) {
-		MemberRoleEnum memberRoleEnum =  member.getRole();
-		if (memberRoleEnum != MemberRoleEnum.ADMIN) {
-			throw new RestApiException(MemberErrorCode.INACTIVE_MEMBER);
-		}
-
-		Member memberBeforeUpdate = memberRepository.findByNickname(nickname)
-			.orElseThrow(() -> new RestApiException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-		Optional<Member> memberOptional = memberRepository.findByNickname(nickname);
-
-		if(!memberOptional.isPresent()){
-			throw new RestApiException(MemberErrorCode.MEMBER_NOT_FOUND);
-		}
-
-		memberBeforeUpdate.updateName(newName);
-
-		return new MemberNewNameResponse(newName);
-
-	}
-
-	@Transactional
-	public void signoutAdmin(MemberNameRequest memberNameRequest, Member member, final HttpServletRequest request) {
-		MemberRoleEnum memberRoleEnum =  member.getRole();
-		if (memberRoleEnum != MemberRoleEnum.ADMIN) {
-			throw new RestApiException(MemberErrorCode.INACTIVE_MEMBER);
-		}
-
-		Member deleteMember = memberRepository.findByNickname(memberNameRequest.getNewName())
-			.orElseThrow(() ->  new RestApiException(MemberErrorCode.MEMBER_NOT_FOUND));
-
-		List<Comment> comments = commentRepository.findByNickname(memberNameRequest.getNewName());
-		for (Comment comment : comments) {
-			// memberId를 임의로 변경합니다.
-			comment.deleteMember();
-			comment.setNickname("탈퇴한 회원");
-		}
-
-		memberRepository.delete(deleteMember);
-
-	}
-
-	// @Override
-
-	// public void mailSend() {
-	//
-	// 	@Autowired
-	// 	MailSender mailSender;
-	//
-	//
-	//
-	// 	// System.out.println("전송 완료!");
-	// 	SimpleMailMessage message = new SimpleMailMessage();
-	// 	message.setTo("kmskes1125@gmail.com"); //수신자 설정
-	// 	message.setSubject("오디약! 비밀번호 변경"); //메일 제목
-	// 	message.setText("이건 메일 내용이고 임시 비밀번호를 보낼 예정입니다."); //메일 내용 설정
-	// 	message.setFrom("kmskes0917@naver.com"); //발신자 설정
-	// 	// message.setReplyTo("보낸이@naver.com");
-	// 	// System.out.println("message"+message);
-	// 	mailSender.send(message);
-	// }
-
 
 	//ing
 	public void checkEmail(String email) {
