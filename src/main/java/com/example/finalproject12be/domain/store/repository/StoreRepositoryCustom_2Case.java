@@ -1,7 +1,7 @@
 package com.example.finalproject12be.domain.store.repository;
 
 import static com.example.finalproject12be.domain.store.entity.QStore.*;
-import static com.example.finalproject12be.domain.store.entity.QStore_2.*;
+import static com.example.finalproject12be.domain.store.entity.QSecond.*;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -15,6 +15,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import com.example.finalproject12be.domain.store.dto.MappedSearchForeignRequest;
+import com.example.finalproject12be.domain.store.entity.Second;
 import com.example.finalproject12be.domain.store.entity.Store;
 import com.example.finalproject12be.domain.store.entity.Store_2;
 import com.example.finalproject12be.security.UserDetailsImpl;
@@ -48,15 +49,15 @@ public class StoreRepositoryCustom_2Case {
 
 	}
 
-	public Page<Store_2> searchForeignStoreWithFiltertest(MappedSearchForeignRequest request, UserDetailsImpl userDetails) {
+	public Page<Second> searchForeignStoreWithFiltertest(MappedSearchForeignRequest request, UserDetailsImpl userDetails) {
 
 		int page = request.getPage();
 		int size = request.getSize();
 
-		QueryResults<Store_2> results = jpaQueryFactory
-			.selectFrom(store_2)
+		QueryResults<Second> results = jpaQueryFactory
+			.selectFrom(second)
 			.where(
-				withinDistance(request.getLatitude(), request.getLongitude(), store_2.latitude, store_2.longitude),
+				withinDistance(request.getLatitude(), request.getLongitude(), second.latitude, second.longitude),
 				eqAddress(request.getGu()),
 				eqStoreName(request.getStoreName()),
 				checkOpen(request.isOpen()),
@@ -74,11 +75,11 @@ public class StoreRepositoryCustom_2Case {
 	}
 
 	private BooleanExpression eqAddress(String gu) {
-		return gu != null ? store_2.gu.eq(gu) : null;
+		return gu != null ? second.gu.eq(gu) : null;
 	}
 
 	private BooleanExpression eqStoreName(String storeName) {
-		return storeName != null ? store_2.name.like("%" + storeName + "%") : null;
+		return storeName != null ? second.name.like("%" + storeName + "%") : null;
 	}
 
 	private BooleanExpression checkOpen(boolean open) {
@@ -125,7 +126,7 @@ public class StoreRepositoryCustom_2Case {
 	}
 
 	private BooleanExpression checkNightdOpen(boolean nightBusiness) {
-		return nightBusiness == true ? store_2.nightPharmacy.eq(1) : null;
+		return nightBusiness == true ? second.nightPharmacy.eq(1) : null;
 	}
 
 	private BooleanExpression checkEnglish(int english) {
@@ -153,7 +154,7 @@ public class StoreRepositoryCustom_2Case {
 	private BooleanExpression checkJapanese(int japanese) {
 		if (japanese == 1) {
 			return Expressions.booleanTemplate(
-				"SUBSTRING(store_2.language, 3, 1) = '1'"
+				"SUBSTRING(language, 3, 1) = '1'"
 			);
 		} else {
 			return null;

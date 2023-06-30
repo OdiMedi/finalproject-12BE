@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public class Store {
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
-
 	@Column(name = "STORE_ID")
 	private Long id;
 

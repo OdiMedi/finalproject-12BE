@@ -55,10 +55,10 @@ public class Store_2 {
 		//this.address = address;
 		this.name = name;
 		this.callNumber = callNumber;
-		//this.weekdaysTime = storeRequest.getWeekdaysTime();
-		//this.saturdayTime = storeRequest.getSaturdayTime();
-		//this.sundayTime = storeRequest.getSundayTime();
-		//this.holidayTime = storeRequest.getHolidayTime();
+		// this.weekdaysTime = storeRequest.getWeekdaysTime();
+		// this.saturdayTime = storeRequest.getSaturdayTime();
+		// this.sundayTime = storeRequest.getSundayTime();
+		// this.holidayTime = storeRequest.getHolidayTime();
 		this.longitude = longitude;
 		this.latitude = latitude;
 	}

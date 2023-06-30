@@ -28,15 +28,19 @@ import com.example.finalproject12be.domain.store.dto.SearchForeignOptionRequest;
 import com.example.finalproject12be.domain.store.dto.SearchOptionRequest;
 import com.example.finalproject12be.domain.store.dto.StoreRequest;
 import com.example.finalproject12be.domain.store.dto.StoreResponseDto;
+import com.example.finalproject12be.domain.store.entity.Second;
 import com.example.finalproject12be.domain.store.entity.Store;
 import com.example.finalproject12be.domain.store.entity.Store_2;
+import com.example.finalproject12be.domain.store.entity.Third;
 import com.example.finalproject12be.domain.store.repository.StoreRepository;
 import com.example.finalproject12be.domain.store.repository.StoreRepositoryCustom;
 import com.example.finalproject12be.domain.store.repository.StoreRepositoryCustom_2Case;
+import com.example.finalproject12be.domain.store.repository.StoreRepositoryCustom_3Case;
 import com.example.finalproject12be.exception.CommonErrorCode;
 import com.example.finalproject12be.exception.MemberErrorCode;
 import com.example.finalproject12be.exception.RestApiException;
 import com.example.finalproject12be.security.UserDetailsImpl;
+import com.querydsl.core.Tuple;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +53,7 @@ public class StoreService {
 	private final StoreRepository storeRepository;
 	private final StoreRepositoryCustom storeRepositoryCustom;
 	private final StoreRepositoryCustom_2Case storeRepositoryCustom_2Case;
+	private final StoreRepositoryCustom_3Case storeRepositoryCustom_3Case;
 
 	//약국 전체보기
 	public List<StoreResponseDto> getAllStores(UserDetailsImpl userDetails) {
@@ -900,21 +905,21 @@ public class StoreService {
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Store_2> fortes_2(SearchForeignOptionRequest request, UserDetailsImpl userDetails) {
+	public Page<Second> fortes_2(SearchForeignOptionRequest request, UserDetailsImpl userDetails) {
 
 		MappedSearchForeignRequest mappedRequest = request.toMappedSearchRequest();
 
-		Page<Store_2> test = storeRepositoryCustom_2Case.searchForeignStoreWithFiltertest(mappedRequest, userDetails);
+		Page<Second> test = storeRepositoryCustom_2Case.searchForeignStoreWithFiltertest(mappedRequest, userDetails);
 
 		return test;
 	}
 
 	@Transactional(readOnly = true)
-	public Page<Store_2> fortes_3(SearchForeignOptionRequest request, UserDetailsImpl userDetails) {
+	public Page<Third> fortes_3(SearchForeignOptionRequest request, UserDetailsImpl userDetails) {
 
 		MappedSearchForeignRequest mappedRequest = request.toMappedSearchRequest();
 
-		Page<Store_2> test = storeRepositoryCustom_2Case.searchForeignStoreWithFiltertest(mappedRequest, userDetails);
+		Page<Third> test = storeRepositoryCustom_3Case.searchForeignStoreWith3Filtertest(mappedRequest, userDetails);
 
 		return test;
 	}

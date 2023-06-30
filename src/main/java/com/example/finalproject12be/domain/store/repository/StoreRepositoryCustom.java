@@ -384,8 +384,8 @@ public class StoreRepositoryCustom {
 			LocalDate currentDate = LocalDate.now();
 			DayOfWeek dayOfWeek = currentDate.getDayOfWeek();
 			DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
-			//String currentDateTime = LocalDateTime.now().format(timeFormatter);
-			String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("17:00"));
+			String currentDateTime = LocalDateTime.now().format(timeFormatter);
+			//String currentDateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("17:00"));
 			if (dayOfWeek != DayOfWeek.SATURDAY && dayOfWeek != DayOfWeek.SUNDAY) {
 
 				BooleanExpression startCondition = Expressions.booleanTemplate(

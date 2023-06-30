@@ -16,7 +16,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.finalproject12be.domain.store.dto.SearchOptionRequest;
+import com.example.finalproject12be.domain.store.entity.Second;
 import com.example.finalproject12be.domain.store.entity.Store_2;
+import com.example.finalproject12be.domain.store.entity.Third;
 import com.example.finalproject12be.domain.store.service.StoreService;
 import com.example.finalproject12be.domain.store.dto.ForeignOneStoreResponse;
 import com.example.finalproject12be.domain.store.dto.ForeignStoreResponse;
@@ -27,6 +29,7 @@ import com.example.finalproject12be.domain.store.dto.StoreResponseDto;
 import com.example.finalproject12be.domain.store.entity.Store;
 
 import com.example.finalproject12be.security.UserDetailsImpl;
+import com.querydsl.core.Tuple;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -184,17 +187,17 @@ public class StoreController {
 
 	//일반 약국 검색 test
 	@GetMapping("/test2")
-	public ResponseEntity<Page<Store_2>> fortes_2(SearchForeignOptionRequest request,
+	public ResponseEntity<Page<Second>> fortes_2(SearchForeignOptionRequest request,
 		@AuthenticationPrincipal UserDetailsImpl userDetails){
 
-		Page<Store_2> result =  storeService.fortes_2(request,userDetails);
+		Page<Second> result =  storeService.fortes_2(request,userDetails);
 		return ResponseEntity.status(HttpStatus.OK).body(result);
 	}
 
 	@GetMapping("/test3")
-	public ResponseEntity<Page<Store_2>> fortes_3(SearchForeignOptionRequest request,
+	public ResponseEntity<Page<Third>> fortes_3(SearchForeignOptionRequest request,
 		@AuthenticationPrincipal UserDetailsImpl userDetails){
-		Page<Store_2> result = storeService.fortes_3(request,userDetails);
+		Page<Third> result = storeService.fortes_3(request,userDetails);
 		return ResponseEntity.status(HttpStatus.OK).body(result);
 	}
 
