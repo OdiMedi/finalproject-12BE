@@ -59,8 +59,9 @@ public class StoreController {
 		return ResponseEntity.status(HttpStatus.OK).body(oneStoreResponseDto);
 	}
 
-	//일반 약국 검색하기
+	//일반 약국 검색하기 페이지네이션
 	//@GetMapping("/api/store/search")
+	@GetMapping("api/store/search/page")
 	public ResponseEntity<Page<StoreResponseDto>> searchStore(
 		@RequestParam("page") int page,
 		@RequestParam("size") int size,
@@ -76,6 +77,25 @@ public class StoreController {
 		Page<StoreResponseDto> storeResponseDtos = storeService.searchStore(page, size, storeName, gu, open, holidayBusiness, nightBusiness, radius, latitude, longitude,userDetails);
 		return ResponseEntity.status(HttpStatus.OK).body(storeResponseDtos);
 	}
+
+	//일반 약국 검색하기 페이지네이션 제거
+	//@GetMapping("/api/store/search")
+	@GetMapping("api/store/search/nopage")
+	public ResponseEntity<List<StoreResponseDto>> searchStore(
+		@RequestParam("storeName") String storeName,
+		@RequestParam("gu") String gu,
+		@RequestParam("open") boolean open,
+		@RequestParam("holidayBusiness") boolean holidayBusiness,
+		@RequestParam("nightBusiness") boolean nightBusiness,
+		@RequestParam("radius") String radius,
+		@RequestParam("latitude") String latitude, @RequestParam("longitude") String longitude,
+		@AuthenticationPrincipal UserDetailsImpl userDetails){
+
+		List<StoreResponseDto> storeResponseDtos = storeService.searchStore(storeName, gu, open, holidayBusiness, nightBusiness, radius, latitude, longitude,userDetails);
+		return ResponseEntity.status(HttpStatus.OK).body(storeResponseDtos);
+	}
+
+
 
 	//외국어 가능 약국 상세보기
 	@GetMapping("/api/store/foreign/{store-id}")
