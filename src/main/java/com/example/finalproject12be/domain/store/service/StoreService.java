@@ -222,22 +222,11 @@ public class StoreService {
 				stores = storeRepository.findAllByAddressContaining(gu);
 
 			} else { //저장된 stores가 있을 때
-				// List<Store> testStores = new ArrayList<>();
-				//
-				// for (Store store : stores) {
-				// 	testStores.add(store);
-				// }
-
-				// for (Store testStore : testStores) {
-				// Iterator<Store> testStoreIterator = testStores.iterator();
-
-				// while (testStoreIterator.hasNext()){
 
 				for(Iterator<Store> storeIterator = stores.iterator(); storeIterator.hasNext();){
 					Store testStore = storeIterator.next();
 
 					if (!testStore.getAddress().contains(gu)) {
-						// stores.remove(testStore);
 						storeIterator.remove();
 					}
 				}
@@ -321,6 +310,137 @@ public class StoreService {
 		final Page<StoreResponseDto> storeResponsePage = new PageImpl<>(storeResponseDtos.subList(start, end), pageable, storeResponseDtos.size());
 
 		return storeResponsePage;
+	}
+
+
+	//no page
+	public List<StoreResponseDto> searchStore(String storeName, String gu, boolean open, boolean holidayBusiness, boolean nightBusiness, String radius, String latitude, String longitude, UserDetailsImpl userDetails) {
+
+		int progress = 0; //stores 리스트가 null일 때 0, 반대는 1
+		List<StoreResponseDto> storeResponseDtos = new ArrayList<>();
+		List<Store> stores = new ArrayList<>();
+
+		//내 위치 기반 가까운 약국 검색
+		if (latitude != "") {
+			progress = 1;
+
+			// stores = storeRepository.findByDistanceWithinRadius(baseRadius, baseLatitude, baseLongitude);
+			stores = storeRepositoryCustom.searchStoreWithinDistance(radius, latitude, longitude);
+		}
+
+		//약국 이름 검색
+		if(storeName != ""){
+
+			if(progress == 0){ //저장된 stores가 없을 때
+				progress = 1;
+				stores = storeRepository.findAllByNameContaining(storeName);
+
+			}else{ //저장된 stores가 있을 때
+				List<Store> testStores = new ArrayList<>();
+
+				for(Store store: stores){
+					testStores.add(store);
+				}
+
+				// for(Store testStore : testStores){
+				Iterator<Store> testStoreIterator = testStores.iterator();
+				while (testStoreIterator.hasNext()){
+
+					Store testStore = testStoreIterator.next();
+
+					if(!testStore.getName().contains(storeName)){
+						stores.remove(testStore);
+					}
+				}
+			}
+		}
+
+		//구 검색
+		if(gu != "") {
+
+			if (progress == 0) { //저장된 stores가 없을 때
+
+				progress = 1;
+				stores = storeRepository.findAllByAddressContaining(gu);
+
+			} else { //저장된 stores가 있을 때
+
+				for(Iterator<Store> storeIterator = stores.iterator(); storeIterator.hasNext();){
+					Store testStore = storeIterator.next();
+
+					if (!testStore.getAddress().contains(gu)) {
+						storeIterator.remove();
+					}
+				}
+			}
+		}else if(progress == 0){
+			return storeResponseDtos;
+		}
+
+		//filter
+		if(open == true){ // 영업중 필터
+
+			if(progress == 1){ //저장된 stores가 있을 때만 실행 가능함
+
+				stores = openCheck(stores);
+
+			}
+
+		}else if(holidayBusiness == true){
+
+			if(progress == 0){
+				progress = 1;
+				stores = storeRepository.findAllByHolidayTimeIsNotNull();
+
+			}else{
+				List<Store> restStores = new ArrayList<>();
+
+				for(Store store: stores){
+					restStores.add(store);
+				}
+
+				for(Store restStore : restStores){
+
+					if(restStore.getHolidayTime() == null){
+						stores.remove(restStore);
+					}
+				}
+			}
+
+		}else if (nightBusiness == true){
+
+			if(progress == 0){
+				progress = 1;
+				stores = storeRepository.findAllByNightPharmacy(1);
+
+			}else if(progress == 1){
+				List<Store> restStores = new ArrayList<>();
+
+				for(Store store: stores){
+					restStores.add(store);
+				}
+
+				for(Store restStore : restStores){
+
+					if(restStore.getNightPharmacy() != 1){
+						stores.remove(restStore);
+					}
+				}
+			}
+		}
+
+		if(userDetails != null){
+			Member member = userDetails.getMember();
+			storeResponseDtos = checkBookmark(stores, storeResponseDtos, member);
+
+		}else{
+
+			for(Store store : stores){
+				storeResponseDtos.add(new StoreResponseDto(store));
+			}
+		}
+
+		return storeResponseDtos;
 	}
 
 	//약국 상세보기
@@ -692,16 +812,12 @@ public class StoreService {
 				stores = storeRepository.findAllByChinese(1);
 
 			} else{
-				List<Store> restStores = new ArrayList<>();
 
-				for(Store store: stores){
-					restStores.add(store);
-				}
+				for(Iterator<Store> storeIterator = stores.iterator(); storeIterator.hasNext();){
+					Store store = storeIterator.next();
 
-				for(Store restStore : restStores){
-
-					if(restStore.getChinese() == null || restStore.getChinese() == 0){
-						stores.remove(restStore);
+					if(store.getChinese() == null || store.getChinese() == 0){
+						storeIterator.remove();
 					}
 				}
 			}
@@ -713,16 +829,12 @@ public class StoreService {
 				stores = storeRepository.findAllByJapanese(1);
 
 			} else{
-				List<Store> restStores = new ArrayList<>();
 
-				for(Store store: stores){
-					restStores.add(store);
-				}
+				for(Iterator<Store> storeIterator = stores.iterator(); storeIterator.hasNext();){
+					Store store = storeIterator.next();
 
-				for(Store restStore : restStores){
-
-					if(restStore.getJapanese() == null || restStore.getJapanese() == 0){
-						stores.remove(restStore);
+					if(store.getJapanese() == null || store.getJapanese() == 0){
+						storeIterator.remove();
 					}
 				}
 			}
